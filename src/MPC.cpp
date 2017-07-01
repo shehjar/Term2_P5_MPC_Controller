@@ -6,8 +6,8 @@
 using CppAD::AD;
 
 // TODO: Set the timestep length and duration
-size_t N = 10;
-double dt = 0.05;
+size_t N = 6;
+double dt = 0.1;
 
 // This value assumes the model presented in the classroom is used.
 //
@@ -23,7 +23,7 @@ const double Lf = 2.67;
 
 double ref_cte = 0;
 double ref_epsi = 0;
-double ref_v = 70;
+double ref_v = 40;
 
 size_t x_start = 0;
 size_t y_start = x_start + N;
@@ -53,13 +53,13 @@ class FG_eval {
     for (size_t t=0; t<N; t++){
       fg[0] += 2000*CppAD::pow(vars[cte_start + t]-ref_cte,2);
       fg[0] += 2000*CppAD::pow(vars[epsi_start + t]- ref_epsi,2);
-      fg[0] += CppAD::pow(vars[v_start + t]- ref_v, 2);
+      fg[0] += 100*CppAD::pow(vars[v_start + t]- ref_v, 2);
     }
 
     // minimize the use of actuators
     for (size_t t=0; t<N-1; t++){
-      fg[0] += 5*CppAD::pow(vars[delta_start + t],2);
-      fg[0] += 5*CppAD::pow(vars[a_start + t], 2);
+      fg[0] += 50*CppAD::pow(vars[delta_start + t],2);
+      fg[0] += 50*CppAD::pow(vars[a_start + t], 2);
     }
     
     // minimize the value gap between sequential actuators
