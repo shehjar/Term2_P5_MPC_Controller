@@ -45,7 +45,7 @@ ptsy = -(ptsx - px)*sin(psi) + (ptsy - py)*cos(psi)
 Here `ptsx` and `ptsy` represent the points on the trajectory. Therefore by doing this we get the initial position and orientation of the car to be zero and the polynomial is then fitted on the transformed coordinates of the planned trajectory. This results in a set of coefficients that can be used to evaluate the cross track error of the car by substituting the predicted `px` position of the car at each `N` level of the predicted movement. The order of fitting is chosen as 3.
 
 ### Model Predictve Control with latency
-The Latency signifies the lag in actuator inputs with repect to the continuously changing state variables. This is implemented within the code by updating the state of the car by the same kinematic equations, but the time step is fixed as 100 milliseconds or 0.1 seconds. Without the latency, the model maneuvers the track without any problems or erroneous behaviour, but with latency, the car oscillates initially as seen in the [video](https://youtu.be/ounbYntb8rl).
+The Latency signifies the lag in actuator inputs with repect to the continuously changing state variables. This is implemented within the code by updating the state of the car by the same kinematic equations, but the time step is fixed as 100 milliseconds or 0.1 seconds. Without the latency, the model maneuvers the track without any problems or erroneous behaviour, but with latency, the car oscillates initially as seen in the [video](https://youtu.be/ounbYntb8rI).
 
 ## Dependencies
 
