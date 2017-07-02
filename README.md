@@ -3,6 +3,50 @@ Self-Driving Car Engineer Nanodegree Program
 
 ---
 
+## Implementation
+
+### The Model
+
+The model hence developed is based on the kinematic model setup as viewed from the lecture. This includes the equations of motion that captures the general movement of the car, given its coordinates, position, velocity and orientation. Therefore the state vector of the car was chosen to be 
+
+* `px` as the position of the car in x direction.
+* `py` as the position of the car in y direction.
+* `psi` as the orientation angle of the car with respect to the horizontal axis in x direction.
+* `v` as the velocity of the car.
+* `cte` as the cross track error of the car with respect to the planned trajectory.
+* `epsi` as the error in the orientation of the car.
+
+The actuators were therfore chosen to be
+
+* `steering_value` or `delta`  as the steering angle of the car
+* `thottle_value` as the accelaration input to the car in the simulator.
+
+The update equations were also deployed as given in the lectures as-
+```
+px += v * cos(psi) * dt
+py += v * sin(psi) * dt
+psi += v * steer_value / Lf * dt
+v += throttle_value * dt
+```
+
+The cross track error is updated by calculating the distance between the predicted position of the car with respect to the planned trajectory. This is calculated using a polynomial fitting using the predicted position `px`. Similarly to this the error in the orientation `epsi` is updated using the same equation as `psi`, with the only difference being that it takes into account the desired `psi` orientation. This is evaluated by the substituting the the position `px` within the tangent of the fitted polynomial.
+
+### Timestep Length and Elapsed Duration (N & dt)
+
+The model predictive control works in a way to transform a control problem to an optimization problem. The way this is achieved through discretizing the predicted movement of the car in `N` steps. A time step `dt` is thus introduced to update the kinematic equations that describe the motion of the car. For the parameter tuning the parameters `N` and `dt` were tested from the range of 5 to 10 and 0.1 to 0.2 respectively. Finally the values of 10 and 0.1 were selected.
+
+### Polynomial Fitting and MPC Pre-processing
+
+The planned trajectory contains data that can be used to fit a polynomial. The trajectory points are aligned in the direction of the prediected orientation of the car before it is used to fit a polynomial. The way we achieve this is shown below-
+```
+ptsx = (ptsx - px)*cos(psi) + (ptsy - py)*sin(psi)
+ptsy = -(ptsx - px)*sin(psi) + (ptsy - py)*cos(psi)
+```
+Here `ptsx` and `ptsy` represent the points on the trajectory. Therefore by doing this we get the initial position and orientation of the car to be zero and the polynomial is then fitted on the transformed coordinates of the planned trajectory. This results in a set of coefficients that can be used to evaluate the cross track error of the car by substituting the predicted `px` position of the car at each `N` level of the predicted movement. The order of fitting is chosen as 3.
+
+### Model Predictve Control with latency
+The Latency signifies the lag in actuator inputs with repect to the continuously changing state variables. This is implemented within the code by updating the state of the car by the same kinematic equations, but the time step is fixed as 100 milliseconds or 0.1 seconds. Without the latency, the model maneuvers the track without any problems or erroneous behaviour, but with latency, the car oscillates initially as seen in the [video](https://youtu.be/ounbYntb8rl).
+
 ## Dependencies
 
 * cmake >= 3.5
@@ -67,10 +111,6 @@ using the following settings:
 * indent using spaces
 * set tab width to 2 spaces (keeps the matrices in source code aligned)
 
-## Code Style
-
-Please (do your best to) stick to [Google's C++ style guide](https://google.github.io/styleguide/cppguide.html).
-
 ## Project Instructions and Rubric
 
 Note: regardless of the changes you make, your project must be buildable using
@@ -80,36 +120,3 @@ More information is only accessible by people who are already enrolled in Term 2
 of CarND. If you are enrolled, see [the project page](https://classroom.udacity.com/nanodegrees/nd013/parts/40f38239-66b6-46ec-ae68-03afd8a601c8/modules/f1820894-8322-4bb3-81aa-b26b3c6dcbaf/lessons/b1ff3be0-c904-438e-aad3-2b5379f0e0c3/concepts/1a2255a0-e23c-44cf-8d41-39b8a3c8264a)
 for instructions and the project rubric.
 
-## Hints!
-
-* You don't have to follow this directory structure, but if you do, your work
-  will span all of the .cpp files here. Keep an eye out for TODOs.
-
-## Call for IDE Profiles Pull Requests
-
-Help your fellow students!
-
-We decided to create Makefiles with cmake to keep this project as platform
-agnostic as possible. Similarly, we omitted IDE profiles in order to we ensure
-that students don't feel pressured to use one IDE or another.
-
-However! I'd love to help people get up and running with their IDEs of choice.
-If you've created a profile for an IDE that you think other students would
-appreciate, we'd love to have you add the requisite profile files and
-instructions to ide_profiles/. For example if you wanted to add a VS Code
-profile, you'd add:
-
-* /ide_profiles/vscode/.vscode
-* /ide_profiles/vscode/README.md
-
-The README should explain what the profile does, how to take advantage of it,
-and how to install it.
-
-Frankly, I've never been involved in a project with multiple IDE profiles
-before. I believe the best way to handle this would be to keep them out of the
-repo root to avoid clutter. My expectation is that most profiles will include
-instructions to copy files to a new location to get picked up by the IDE, but
-that's just a guess.
-
-One last note here: regardless of the IDE used, every submitted project must
-still be compilable with cmake and make./
